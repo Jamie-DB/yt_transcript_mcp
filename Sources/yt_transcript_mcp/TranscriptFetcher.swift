@@ -204,6 +204,12 @@ enum TranscriptFetcher {
             throw TranscriptError.networkError("Invalid caption URL")
         }
 
+        // SSRF hardening: only allow requests to trusted YouTube/Google domains
+        guard let host = url.host?.lowercased(),
+              host.hasSuffix("youtube.com") || host.hasSuffix("google.com") else {
+            throw TranscriptError.networkError("Caption URL does not point to a trusted domain")
+        }
+
         var request = URLRequest(url: url)
         request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
 
@@ -244,7 +250,7 @@ enum TranscriptFetcher {
 // MARK: - XML Parser Delegate
 
 /// Delegate-based XML parser for YouTube caption format.
-private final class CaptionXMLParser: NSObject, XMLParserDelegate, @unchecked Sendable {
+private final class CaptionXMLParser: NSObject, XMLParserDelegate {
 
     var entries: [TranscriptEntry] = []
     var error: String?
