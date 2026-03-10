@@ -2,11 +2,23 @@ import Foundation
 
 enum TranscriptError: Error, CustomStringConvertible {
     case invalidVideoURL(String)
+    case networkError(String)
+    case noCaptionsAvailable(String)
+    case captionTrackNotFound(String)
+    case parsingError(String)
 
     var description: String {
         switch self {
         case .invalidVideoURL(let input):
             return "Could not extract a valid YouTube video ID from: \(input)"
+        case .networkError(let detail):
+            return "Network error: \(detail)"
+        case .noCaptionsAvailable(let videoID):
+            return "No captions available for video: \(videoID)"
+        case .captionTrackNotFound(let language):
+            return "Caption track not found for language: \(language)"
+        case .parsingError(let detail):
+            return "Failed to parse transcript data: \(detail)"
         }
     }
 }
