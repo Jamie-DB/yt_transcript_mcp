@@ -26,5 +26,9 @@ let package = Package(
                 .product(name: "Logging", package: "swift-log"),
             ]
         ),
+        .testTarget(
+            name: "yt_transcript_mcpTests",
+            dependencies: ["yt_transcript_mcp"]
+        ),
     ]
 )
