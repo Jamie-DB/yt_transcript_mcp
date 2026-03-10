@@ -20,7 +20,7 @@ Lists available transcript/caption languages for a YouTube video.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `url` | string | No | YouTube video URL or video ID |
+| `url` | string | Yes | YouTube video URL or video ID |
 
 Both tools accept any standard YouTube URL format (`youtube.com/watch?v=`, `youtu.be/`, `/embed/`, `/shorts/`) or a raw 11-character video ID.
 
