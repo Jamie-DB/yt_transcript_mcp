@@ -34,6 +34,7 @@ struct TranscriptEntry: Sendable {
 struct TranscriptResult: Sendable {
     let metadata: VideoMetadata
     let entries: [TranscriptEntry]
+    let languageCode: String
 }
 
 struct CaptionTrackResult: Sendable {
@@ -98,7 +99,7 @@ enum TranscriptFetcher {
 
         let xml = try await fetchCaptionXML(from: track.baseURL)
         let entries = try parseCaptionXML(xml)
-        return TranscriptResult(metadata: result.metadata, entries: entries)
+        return TranscriptResult(metadata: result.metadata, entries: entries, languageCode: track.languageCode)
     }
 
     // MARK: - Step 1: Fetch InnerTube API Key from Page

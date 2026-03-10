@@ -94,8 +94,12 @@ private func handleGetTranscript(_ params: CallTool.Parameters) async -> CallToo
         return .init(content: [.text("\(error)")], isError: true)
     }
 
-    // Cache the result
-    await cache.storeTranscript(result, videoID: videoID, language: language)
+    // Cache under actual language returned
+    await cache.storeTranscript(result, videoID: videoID, language: result.languageCode)
+    // Also cache under requested key so the same fallback request hits cache next time
+    if language != result.languageCode {
+        await cache.storeTranscript(result, videoID: videoID, language: language)
+    }
 
     return formatTranscriptResult(result, includeTimestamps: includeTimestamps)
 }
