@@ -1,6 +1,23 @@
 import Foundation
 import Logging
 
+struct VideoMetadata: Sendable {
+    let title: String
+    let channel: String
+    let description: String
+    let durationSeconds: Int
+
+    var formattedDuration: String {
+        let hours = durationSeconds / 3600
+        let minutes = (durationSeconds % 3600) / 60
+        let seconds = durationSeconds % 60
+        if hours > 0 {
+            return "\(hours):\(String(format: "%02d", minutes)):\(String(format: "%02d", seconds))"
+        }
+        return "\(minutes):\(String(format: "%02d", seconds))"
+    }
+}
+
 struct CaptionTrack: Sendable {
     let baseURL: String
     let languageCode: String
@@ -12,6 +29,16 @@ struct TranscriptEntry: Sendable {
     let start: Double
     let duration: Double
     let text: String
+}
+
+struct TranscriptResult: Sendable {
+    let metadata: VideoMetadata
+    let entries: [TranscriptEntry]
+}
+
+struct CaptionTrackResult: Sendable {
+    let metadata: VideoMetadata
+    let tracks: [CaptionTrack]
 }
 
 enum TranscriptFetcher {
@@ -26,11 +53,13 @@ enum TranscriptFetcher {
 
     // MARK: - Public API
 
-    /// Fetches available caption tracks for a video.
-    static func fetchCaptionTracks(videoID: String) async throws -> [CaptionTrack] {
-        let captionsJSON = try await fetchCaptionsJSON(videoID: videoID)
-        let tracks = try extractCaptionTracks(from: captionsJSON, videoID: videoID)
-        return tracks
+    /// Fetches available caption tracks and video metadata for a video.
+    static func fetchCaptionTracks(videoID: String) async throws -> CaptionTrackResult {
+        let innertubeData = try await fetchInnertubeData(videoID: videoID)
+        let metadata = extractMetadata(from: innertubeData, videoID: videoID)
+        let renderer = try extractCaptionsRenderer(from: innertubeData, videoID: videoID)
+        let tracks = try extractCaptionTracks(from: renderer, videoID: videoID)
+        return CaptionTrackResult(metadata: metadata, tracks: tracks)
     }
 
     /// Fetches the transcript for a video, optionally in a specific language.
@@ -38,27 +67,27 @@ enum TranscriptFetcher {
     static func fetchTranscript(
         videoID: String,
         languageCode: String? = nil
-    ) async throws -> [TranscriptEntry] {
-        let tracks = try await fetchCaptionTracks(videoID: videoID)
+    ) async throws -> TranscriptResult {
+        let result = try await fetchCaptionTracks(videoID: videoID)
 
-        guard !tracks.isEmpty else {
+        guard !result.tracks.isEmpty else {
             throw TranscriptError.noCaptionsAvailable(videoID)
         }
 
         let track: CaptionTrack
         if let lang = languageCode,
-           let match = tracks.first(where: { $0.languageCode == lang }) {
+           let match = result.tracks.first(where: { $0.languageCode == lang }) {
             track = match
         } else if languageCode != nil {
-            logger.info("Language '\(languageCode!)' not found, falling back to '\(tracks[0].languageCode)'")
-            track = tracks[0]
+            logger.info("Language '\(languageCode!)' not found, falling back to '\(result.tracks[0].languageCode)'")
+            track = result.tracks[0]
         } else {
-            track = tracks[0]
+            track = result.tracks[0]
         }
 
         let xml = try await fetchCaptionXML(from: track.baseURL)
         let entries = try parseCaptionXML(xml)
-        return entries
+        return TranscriptResult(metadata: result.metadata, entries: entries)
     }
 
     // MARK: - Step 1: Fetch InnerTube API Key from Page
@@ -98,11 +127,11 @@ enum TranscriptFetcher {
         return String(html[keyRange])
     }
 
-    // MARK: - Step 2: Fetch Captions via InnerTube API
+    // MARK: - Step 2: Fetch Player Data via InnerTube API
 
-    /// Uses the InnerTube API to get caption track data for a video.
-    /// This returns caption URLs that work without a PO token.
-    private static func fetchCaptionsJSON(videoID: String) async throws -> [String: Any] {
+    /// Fetches the full InnerTube player response for a video.
+    /// Contains both videoDetails (metadata) and captions data.
+    private static func fetchInnertubeData(videoID: String) async throws -> [String: Any] {
         let apiKey = try await fetchInnertubeAPIKey(videoID: videoID)
 
         guard let url = URL(string: "\(innertubeAPIURL)\(apiKey)") else {
@@ -139,12 +168,29 @@ enum TranscriptFetcher {
             throw TranscriptError.parsingError("Could not parse InnerTube API response")
         }
 
-        // Navigate to captions > playerCaptionsTracklistRenderer
-        guard let captions = json["captions"] as? [String: Any],
+        return json
+    }
+
+    /// Extracts video metadata from the InnerTube player response.
+    private static func extractMetadata(from data: [String: Any], videoID: String) -> VideoMetadata {
+        let details = data["videoDetails"] as? [String: Any]
+        return VideoMetadata(
+            title: details?["title"] as? String ?? "Unknown",
+            channel: details?["author"] as? String ?? "Unknown",
+            description: details?["shortDescription"] as? String ?? "",
+            durationSeconds: Int(details?["lengthSeconds"] as? String ?? "0") ?? 0
+        )
+    }
+
+    /// Extracts the captions renderer from the InnerTube player response.
+    private static func extractCaptionsRenderer(
+        from data: [String: Any],
+        videoID: String
+    ) throws -> [String: Any] {
+        guard let captions = data["captions"] as? [String: Any],
               let renderer = captions["playerCaptionsTracklistRenderer"] as? [String: Any] else {
             throw TranscriptError.noCaptionsAvailable(videoID)
         }
-
         return renderer
     }
 
