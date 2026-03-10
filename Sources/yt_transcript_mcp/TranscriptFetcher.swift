@@ -231,7 +231,7 @@ enum TranscriptFetcher {
 
     /// Parses YouTube caption XML into transcript entries.
     /// Format: `<text start="0.0" dur="2.5">caption text</text>`
-    private static func parseCaptionXML(_ data: Data) throws -> [TranscriptEntry] {
+    static func parseCaptionXML(_ data: Data) throws -> [TranscriptEntry] {
         let parser = CaptionXMLParser()
         let success = parser.parse(data: data)
 
