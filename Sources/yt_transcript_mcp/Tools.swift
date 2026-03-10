@@ -2,6 +2,7 @@ import MCP
 import Logging
 
 private let toolsLogger = Logger(label: "yt_transcript_mcp.tools")
+private let cache = TranscriptCache()
 
 func registerTools(on server: Server) async {
     // List available tools
@@ -77,6 +78,12 @@ private func handleGetTranscript(_ params: CallTool.Parameters) async -> CallToo
         return .init(content: [.text("\(error)")], isError: true)
     }
 
+    // Check cache first
+    if let cached = await cache.getTranscript(videoID: videoID, language: language) {
+        toolsLogger.info("Serving cached transcript for \(videoID)")
+        return formatTranscriptResult(cached, includeTimestamps: includeTimestamps)
+    }
+
     toolsLogger.info("Fetching transcript for \(videoID), language: \(language ?? "default")")
 
     // Fetch transcript
@@ -87,13 +94,58 @@ private func handleGetTranscript(_ params: CallTool.Parameters) async -> CallToo
         return .init(content: [.text("\(error)")], isError: true)
     }
 
-    // Format output with metadata header
+    // Cache the result
+    await cache.storeTranscript(result, videoID: videoID, language: language)
+
+    return formatTranscriptResult(result, includeTimestamps: includeTimestamps)
+}
+
+private func handleListLanguages(_ params: CallTool.Parameters) async -> CallTool.Result {
+    guard let urlInput = params.arguments?["url"]?.stringValue else {
+        return .init(content: [.text("Missing required parameter: url")], isError: true)
+    }
+
+    // Extract video ID (trust boundary)
+    let videoID: String
+    do {
+        videoID = try VideoIDExtractor.extractVideoID(from: urlInput)
+    } catch {
+        return .init(content: [.text("\(error)")], isError: true)
+    }
+
+    // Check cache first
+    if let cached = await cache.getCaptionTracks(videoID: videoID) {
+        toolsLogger.info("Serving cached caption tracks for \(videoID)")
+        return formatCaptionTrackResult(cached)
+    }
+
+    toolsLogger.info("Listing languages for \(videoID)")
+
+    // Fetch caption tracks
+    let result: CaptionTrackResult
+    do {
+        result = try await TranscriptFetcher.fetchCaptionTracks(videoID: videoID)
+    } catch {
+        return .init(content: [.text("\(error)")], isError: true)
+    }
+
+    // Cache the result
+    await cache.storeCaptionTracks(result, videoID: videoID)
+
+    return formatCaptionTrackResult(result)
+}
+
+// MARK: - Formatting
+
+private func formatTranscriptResult(
+    _ result: TranscriptResult,
+    includeTimestamps: Bool
+) -> CallTool.Result {
     let meta = result.metadata
     var header = "Title: \(meta.title)\n"
     header += "Channel: \(meta.channel)\n"
     header += "Duration: \(meta.formattedDuration)\n"
     if !meta.description.isEmpty {
-        // Truncate long descriptions to keep context focused
         let desc = meta.description.count > 300
             ? String(meta.description.prefix(300)) + "..."
             : meta.description
@@ -115,31 +167,9 @@ private func handleGetTranscript(_ params: CallTool.Parameters) async -> CallToo
     return .init(content: [.text(header + body)])
 }
 
-private func handleListLanguages(_ params: CallTool.Parameters) async -> CallTool.Result {
-    guard let urlInput = params.arguments?["url"]?.stringValue else {
-        return .init(content: [.text("Missing required parameter: url")], isError: true)
-    }
-
-    // Extract video ID (trust boundary)
-    let videoID: String
-    do {
-        videoID = try VideoIDExtractor.extractVideoID(from: urlInput)
-    } catch {
-        return .init(content: [.text("\(error)")], isError: true)
-    }
-
-    toolsLogger.info("Listing languages for \(videoID)")
-
-    // Fetch caption tracks
-    let result: CaptionTrackResult
-    do {
-        result = try await TranscriptFetcher.fetchCaptionTracks(videoID: videoID)
-    } catch {
-        return .init(content: [.text("\(error)")], isError: true)
-    }
-
+private func formatCaptionTrackResult(_ result: CaptionTrackResult) -> CallTool.Result {
     if result.tracks.isEmpty {
-        return .init(content: [.text("No captions available for video: \(videoID)")], isError: true)
+        return .init(content: [.text("No captions available")], isError: true)
     }
 
     let meta = result.metadata
