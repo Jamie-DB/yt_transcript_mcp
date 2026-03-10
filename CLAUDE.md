@@ -66,6 +66,7 @@
 - **Planning doc:** [Notion project page]([internal planning doc])
 - **GitHub Issues #1-#6** track the development phases and open questions
 - **GitHub Issues #7-#23** track code review findings and improvements
+- **Packaging:** Supports `.mcpb` bundle for one-click Claude Desktop installation. Run `./scripts/build_mcpb.sh` to produce both the release binary and the `.mcpb` bundle.
 - **Status:** All development phases (#1-#5) complete. Server is shipped and functional. Only stretch goals remain (#16).
 
 ## Writing Style
@@ -98,6 +99,9 @@
     TranscriptCache.swift   - actor-based in-memory cache (lives for session duration)
     VideoIDExtractor.swift  - URL parsing for all YouTube URL formats
     Tools.swift             - MCP tool definitions and handler registration
+  scripts/
+    build_mcpb.sh           - builds release binary + .mcpb bundle
+  manifest.json             - mcpb v0.3 manifest for Claude Desktop extension
   ```
 
 ## Do Not
@@ -115,6 +119,7 @@
 - URLSession uses a configured session with 15s request / 30s resource timeouts (not `URLSession.shared`).
 - To debug: build in Xcode, have Claude spawn the binary, then Debug > Attach to Process in Xcode.
 - Registration: `claude mcp add yt_transcript -- /full/path/to/.build/release/yt_transcript_mcp`
+- The mcpb manifest spec (v0.3/v0.4) only allows `name` and `description` in the `tools` array (`additionalProperties: false`). Full input schemas are discovered at runtime via `tools/list`, not the manifest.
 
 ---
 
