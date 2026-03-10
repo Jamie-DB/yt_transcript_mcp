@@ -4,7 +4,6 @@ enum TranscriptError: Error, CustomStringConvertible {
     case invalidVideoURL(String)
     case networkError(String)
     case noCaptionsAvailable(String)
-    case captionTrackNotFound(String)
     case parsingError(String)
 
     var description: String {
@@ -15,8 +14,6 @@ enum TranscriptError: Error, CustomStringConvertible {
             return "Network error: \(detail)"
         case .noCaptionsAvailable(let videoID):
             return "No captions available for video: \(videoID)"
-        case .captionTrackNotFound(let language):
-            return "Caption track not found for language: \(language)"
         case .parsingError(let detail):
             return "Failed to parse transcript data: \(detail)"
         }

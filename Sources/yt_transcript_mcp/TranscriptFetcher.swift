@@ -51,6 +51,17 @@ enum TranscriptFetcher {
     // InnerTube API endpoint (Android client avoids PO token requirement)
     private static let innertubeAPIURL = "https://www.youtube.com/youtubei/v1/player?key="
 
+    // Compiled once; pattern is a constant so try! is safe (same approach as VideoIDExtractor).
+    private static let apiKeyPattern = try! NSRegularExpression(
+        pattern: #""INNERTUBE_API_KEY":\s*"([a-zA-Z0-9_-]+)""#
+    )
+
+    // YouTube Android client version for InnerTube API requests.
+    // YouTube periodically enforces minimum versions. If the API starts
+    // returning errors, try updating this to a recent version number.
+    // Last verified: 2026-03
+    private static let androidClientVersion = "20.10.38"
+
     // MARK: - Public API
 
     /// Fetches available caption tracks and video metadata for a video.
@@ -117,9 +128,8 @@ enum TranscriptFetcher {
         }
 
         // Extract INNERTUBE_API_KEY from the page
-        let pattern = try! NSRegularExpression(pattern: #""INNERTUBE_API_KEY":\s*"([a-zA-Z0-9_-]+)""#)
         let range = NSRange(html.startIndex..., in: html)
-        guard let match = pattern.firstMatch(in: html, range: range),
+        guard let match = apiKeyPattern.firstMatch(in: html, range: range),
               let keyRange = Range(match.range(at: 1), in: html) else {
             throw TranscriptError.parsingError("Could not find INNERTUBE_API_KEY in page")
         }
@@ -142,7 +152,7 @@ enum TranscriptFetcher {
             "context": [
                 "client": [
                     "clientName": "ANDROID",
-                    "clientVersion": "20.10.38"
+                    "clientVersion": androidClientVersion
                 ]
             ],
             "videoId": videoID,
@@ -164,8 +174,17 @@ enum TranscriptFetcher {
             throw TranscriptError.networkError("InnerTube API request failed")
         }
 
-        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            throw TranscriptError.parsingError("Could not parse InnerTube API response")
+        let parsed: Any
+        do {
+            parsed = try JSONSerialization.jsonObject(with: data)
+        } catch {
+            throw TranscriptError.parsingError(
+                "Could not parse InnerTube API response: \(error.localizedDescription)"
+            )
+        }
+
+        guard let json = parsed as? [String: Any] else {
+            throw TranscriptError.parsingError("InnerTube API response was not a JSON object")
         }
 
         return json

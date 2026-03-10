@@ -104,7 +104,7 @@
 
 ## Things to Remember
 
-- The HTML parsing step (extracting `captionTracks` from YouTube page HTML) is the fragile part. If something breaks in the future, look there first. The caption XML format is stable.
+- The InnerTube Android client version (`androidClientVersion` in TranscriptFetcher) is the maintenance-sensitive value. YouTube periodically enforces minimum versions. If transcript fetching breaks, update this version first.
 - YouTube serves different content without a browser-like User-Agent header. Always set one on URLSession requests.
 - To debug: build in Xcode, have Claude spawn the binary, then Debug > Attach to Process in Xcode.
 - Registration: `claude mcp add yt_transcript -- /full/path/to/.build/release/yt_transcript_mcp`
