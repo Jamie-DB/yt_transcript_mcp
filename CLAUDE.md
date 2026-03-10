@@ -85,6 +85,7 @@
 - **All names use underscores**, not hyphens (package, repo, tools, everything)
 - Always include input schema on MCP tools, even if simple (some clients won't discover tools without it)
 - Return errors as `.init(content: [.text("error message")], isError: true)` rather than throwing
+- Always construct fetch URLs from the extracted video ID using a hardcoded template. Never pass user-provided URLs directly to URLSession. The VideoIDExtractor output is the trust boundary.
 - Source layout:
   ```
   Sources/
@@ -99,6 +100,7 @@
 - Do not use `print()` anywhere. It corrupts the JSON-RPC protocol on stdout.
 - Do not build this as an app target. It is an executable Swift package.
 - Do not use hyphenated names. Project convention is underscores everywhere.
+- Do not pass user-supplied URL strings directly to URLSession. Always extract the video ID first and construct URLs from hardcoded templates.
 
 ## Things to Remember
 

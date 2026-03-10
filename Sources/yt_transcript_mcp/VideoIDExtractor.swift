@@ -30,7 +30,8 @@ enum VideoIDExtractor {
             // youtube.com/v/VIDEO_ID (legacy)
             #"(?:https?://)?(?:www\.)?youtube\.com/v/(\#(videoIDPattern))"#,
         ]
-        return patterns.compactMap { try? NSRegularExpression(pattern: $0) }
+        // These are compile-time constants. If one fails, that's a developer error.
+        return patterns.map { try! NSRegularExpression(pattern: $0) }
     }()
 
     /// Extracts an 11-character YouTube video ID from a URL string or raw ID.
