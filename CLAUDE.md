@@ -65,6 +65,8 @@
 - **Two tools:** `get_youtube_transcript`, `list_transcript_languages`
 - **Planning doc:** [Notion project page]([internal planning doc])
 - **GitHub Issues #1-#6** track the development phases and open questions
+- **GitHub Issues #7-#23** track code review findings and improvements
+- **Status:** All development phases (#1-#5) complete. Server is shipped and functional. Only stretch goals remain (#16).
 
 ## Writing Style
 
@@ -76,6 +78,8 @@
 - Work in phases (see GitHub Issues). Don't skip ahead or build everything at once.
 - Commit at natural checkpoints within each phase.
 - No branch workflow; work directly on main.
+- When running multiple agents in parallel, keep git actions (commit, push) in the main chat to prevent race conditions with the remote.
+- **Code review workflow:** A separate Claude Code instance acts as tech lead and reviewer. Launch it from the project directory so it picks up this CLAUDE.md. Run `/code-review` to review commits. Findings are filed as GitHub issues for the implementing instance to pick up. Issues #7-#12, #15-#23 were created this way.
 
 ## Coding Conventions
 
@@ -90,7 +94,8 @@
   ```
   Sources/
     main.swift              - entry point, server setup, transport start
-    TranscriptFetcher.swift - YouTube page fetch, caption URL extraction, XML parsing
+    TranscriptFetcher.swift - InnerTube API fetch, caption URL extraction, XML parsing
+    TranscriptCache.swift   - actor-based in-memory cache (lives for session duration)
     VideoIDExtractor.swift  - URL parsing for all YouTube URL formats
     Tools.swift             - MCP tool definitions and handler registration
   ```
@@ -106,6 +111,8 @@
 
 - The InnerTube Android client version (`androidClientVersion` in TranscriptFetcher) is the maintenance-sensitive value. YouTube periodically enforces minimum versions. If transcript fetching breaks, update this version first.
 - YouTube serves different content without a browser-like User-Agent header. Always set one on URLSession requests.
+- Default log level is `.info`. Set `YT_TRANSCRIPT_LOG_LEVEL` env var to `debug` for verbose output.
+- URLSession uses a configured session with 15s request / 30s resource timeouts (not `URLSession.shared`).
 - To debug: build in Xcode, have Claude spawn the binary, then Debug > Attach to Process in Xcode.
 - Registration: `claude mcp add yt_transcript -- /full/path/to/.build/release/yt_transcript_mcp`
 
