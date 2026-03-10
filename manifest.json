@@ -1,0 +1,31 @@
+{
+  "manifest_version": "0.3",
+  "name": "yt_transcript_mcp",
+  "version": "1.0.0",
+  "description": "Fetches YouTube video transcripts and captions for AI assistants",
+  "author": {
+    "name": "Jamie-DB"
+  },
+  "server": {
+    "type": "binary",
+    "entry_point": "server/yt_transcript_mcp",
+    "mcp_config": {
+      "command": "${__dirname}/server/yt_transcript_mcp",
+      "args": [],
+      "env": {}
+    }
+  },
+  "tools": [
+    {
+      "name": "get_youtube_transcript",
+      "description": "Fetches the transcript/captions for a YouTube video. Returns timestamped text by default."
+    },
+    {
+      "name": "list_transcript_languages",
+      "description": "Lists available transcript/caption languages for a YouTube video."
+    }
+  ],
+  "compatibility": {
+    "platforms": ["darwin"]
+  }
+}
