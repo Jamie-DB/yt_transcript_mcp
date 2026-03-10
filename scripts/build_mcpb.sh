@@ -5,6 +5,13 @@ PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 BUNDLE_DIR="$PROJECT_DIR/.build/mcpb_staging"
 OUTPUT_FILE="$PROJECT_DIR/.build/yt_transcript_mcp.mcpb"
 
+if ! command -v mcpb >/dev/null 2>&1; then
+    echo "Error: mcpb CLI not found. Install with: npm install -g @anthropic-ai/mcpb"
+    exit 1
+fi
+
+cd "$PROJECT_DIR"
+
 echo "==> Building release binary..."
 swift build -c release
 
