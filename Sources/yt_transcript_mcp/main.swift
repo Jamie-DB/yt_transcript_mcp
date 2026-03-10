@@ -1,10 +1,18 @@
+import Foundation
 import MCP
 import Logging
 
 // Configure logging to stderr (stdout is reserved for JSON-RPC)
 LoggingSystem.bootstrap { label in
     var handler = StreamLogHandler.standardError(label: label)
-    handler.logLevel = .debug
+    let logLevel: Logger.Level = {
+        if let env = ProcessInfo.processInfo.environment["YT_TRANSCRIPT_LOG_LEVEL"],
+           let level = Logger.Level(rawValue: env) {
+            return level
+        }
+        return .info
+    }()
+    handler.logLevel = logLevel
     return handler
 }
 

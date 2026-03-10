@@ -52,6 +52,14 @@ enum TranscriptFetcher {
     // InnerTube API endpoint (Android client avoids PO token requirement)
     private static let innertubeAPIURL = "https://www.youtube.com/youtubei/v1/player?key="
 
+    // Configured session with reasonable timeouts for an interactive MCP tool.
+    private static let session: URLSession = {
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = 15
+        config.timeoutIntervalForResource = 30
+        return URLSession(configuration: config)
+    }()
+
     // Compiled once; pattern is a constant so try! is safe (same approach as VideoIDExtractor).
     private static let apiKeyPattern = try! NSRegularExpression(
         pattern: #""INNERTUBE_API_KEY":\s*"([a-zA-Z0-9_-]+)""#
@@ -114,7 +122,7 @@ enum TranscriptFetcher {
 
         logger.debug("Fetching video page for API key: \(videoID)")
 
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await session.data(for: request)
 
         guard let httpResponse = response as? HTTPURLResponse else {
             throw TranscriptError.networkError("Invalid response type")
@@ -168,7 +176,7 @@ enum TranscriptFetcher {
 
         logger.debug("Fetching InnerTube player data for \(videoID)")
 
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await session.data(for: request)
 
         guard let httpResponse = response as? HTTPURLResponse,
               httpResponse.statusCode == 200 else {
@@ -281,7 +289,7 @@ enum TranscriptFetcher {
 
         logger.debug("Fetching caption XML")
 
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await session.data(for: request)
 
         guard let httpResponse = response as? HTTPURLResponse,
               httpResponse.statusCode == 200 else {

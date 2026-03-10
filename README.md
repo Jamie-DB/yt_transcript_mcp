@@ -97,6 +97,27 @@ Unit tests (URL parsing, XML parsing) run offline. Integration tests fetch from 
 
 Transcripts are cached in memory for the lifetime of the server process to avoid redundant network calls.
 
+## Troubleshooting
+
+Enable debug logging with the `YT_TRANSCRIPT_LOG_LEVEL` environment variable:
+
+```bash
+YT_TRANSCRIPT_LOG_LEVEL=debug claude mcp add yt_transcript -- /path/to/yt_transcript_mcp
+```
+
+Or in Claude Desktop config:
+
+```json
+{
+  "mcpServers": {
+    "yt_transcript": {
+      "command": "/path/to/yt_transcript_mcp",
+      "env": { "YT_TRANSCRIPT_LOG_LEVEL": "debug" }
+    }
+  }
+}
+```
+
 ## Maintenance
 
 The InnerTube Android client version (`androidClientVersion` in `TranscriptFetcher.swift`) is the maintenance-sensitive value. YouTube periodically enforces minimum versions. If transcript fetching stops working, update this version string first.
