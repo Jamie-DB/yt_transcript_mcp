@@ -1,6 +1,6 @@
 # Build Log
 
-One session, one day: March 10, 2026, first commit 11:09 AM, packaged binary 4:06 PM. 20 commits, 1,404 lines across 14 files, 27 GitHub issues opened and 26 closed the same day. Development ran as five planned phases with a second Claude Code instance acting as an independent code reviewer, filing findings as issues against the working instance.
+One session, one day: March 10, 2026, first commit 11:09 AM, packaged binary 4:06 PM. 20 commits, 1,404 lines across 14 files, 27 GitHub issues opened and 26 closed the same day. Development ran as five planned phases with a second Claude Code instance acting as an independent code reviewer, filing findings as issues against the working instance. The ratio is the point: the working build existed by early afternoon, and more than half the day went to review findings, security hardening, and packaging. Generating the code was the fast part. Verifying it was the job.
 
 **11:09 AM. Plan before code.** Empty Swift Package Manager executable, the official MCP Swift SDK, and GitHub issues #1 through #6 laying out five phases plus an open-questions issue before any real code existed. The phase structure held for the whole build.
 
