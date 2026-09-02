@@ -1,5 +1,21 @@
 import Testing
+import Foundation
 @testable import yt_transcript_mcp
+
+@Suite("Caption URL trust check")
+struct CaptionURLTrustTests {
+    private func trusted(_ s: String) -> Bool {
+        TranscriptFetcher.isTrustedCaptionURL(URL(string: s)!)
+    }
+
+    @Test func acceptsYouTubeApex() { #expect(trusted("https://youtube.com/api/timedtext")) }
+    @Test func acceptsYouTubeSubdomain() { #expect(trusted("https://www.youtube.com/api/timedtext")) }
+    @Test func acceptsGoogleSubdomain() { #expect(trusted("https://video.google.com/timedtext")) }
+    @Test func rejectsLookalikeYouTubeHost() { #expect(!trusted("https://evilyoutube.com/api/timedtext")) }
+    @Test func rejectsLookalikeGoogleHost() { #expect(!trusted("https://notgoogle.com/x")) }
+    @Test func rejectsPlainHTTP() { #expect(!trusted("http://www.youtube.com/api/timedtext")) }
+    @Test func rejectsTrustedNameInPath() { #expect(!trusted("https://example.com/youtube.com")) }
+}
 
 @Suite("TranscriptFetcher")
 struct TranscriptFetcherTests {

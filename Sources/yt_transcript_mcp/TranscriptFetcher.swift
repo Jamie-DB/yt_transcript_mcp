@@ -278,9 +278,8 @@ enum TranscriptFetcher {
             throw TranscriptError.networkError("Invalid caption URL")
         }
 
-        // SSRF hardening: only allow requests to trusted YouTube/Google domains
-        guard let host = url.host?.lowercased(),
-              host.hasSuffix("youtube.com") || host.hasSuffix("google.com") else {
+        // SSRF hardening: only allow https requests to trusted YouTube/Google domains
+        guard isTrustedCaptionURL(url) else {
             throw TranscriptError.networkError("Caption URL does not point to a trusted domain")
         }
 
@@ -301,6 +300,18 @@ enum TranscriptFetcher {
         }
 
         return data
+    }
+
+    /// SSRF hardening: caption URLs must be https and point at youtube.com,
+    /// google.com, or a true subdomain of either. Dot-suffix matching, not
+    /// string-suffix, so lookalike hosts (evilyoutube.com) fail.
+    static func isTrustedCaptionURL(_ url: URL) -> Bool {
+        guard url.scheme?.lowercased() == "https",
+              let host = url.host?.lowercased() else {
+            return false
+        }
+        let trustedDomains = ["youtube.com", "google.com"]
+        return trustedDomains.contains { host == $0 || host.hasSuffix("." + $0) }
     }
 
     /// Parses YouTube caption XML into transcript entries.
