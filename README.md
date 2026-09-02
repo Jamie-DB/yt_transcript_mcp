@@ -2,6 +2,30 @@
 
 A lightweight MCP server that fetches YouTube video transcripts. Built in Swift, runs as a local binary. No Node, no Python, no npx.
 
+## What it does and why I built it
+
+It gives AI assistants two tools: fetch a YouTube video's transcript, and list the caption languages available. I built it because watching video for information is now the slow path. Even at 2x, a 40-minute talk costs 20 minutes; the transcript plus a model that can synthesize it costs moments. I use it daily inside Claude Code to pull technical talks, tutorials, and research videos into text I can actually work with.
+
+## How it was built
+
+One day, March 10, 2026: first commit 11:09 AM, packaged binary 4:06 PM, with more than half of that time spent on review findings, security hardening, and packaging rather than initial code. The work ran as five phases planned as GitHub issues before any code existed. A second Claude Code instance acted as an independent reviewer with fresh context, filing 17 findings as issues against the build (a language-keyed cache bug, SSRF hardening, a fail-fast regex decision) rather than fixing anything silently, and I arbitrated each one. The full narrative, dead ends included, is in [BUILDLOG.md](BUILDLOG.md).
+
+Decisions that were mine, for the record: user-supplied URLs never reach URLSession (fetch URLs are built from the extracted video ID and a hardcoded template), stdout belongs exclusively to JSON-RPC, and the static regex uses try! on purpose so a broken pattern crashes at startup instead of silently failing every lookup.
+
+## Current shortcomings
+
+- The InnerTube androidClientVersion string is maintenance-sensitive. YouTube periodically enforces minimum versions, and when fetching breaks, this is the first thing to update. The tool depends on YouTube internals that can change without notice.
+- Requests are unauthenticated, so private videos return "No captions available" even when captions exist. Videos must be public or unlisted.
+- The cache is in-memory only and lives for the server process. Restart the server, refetch everything.
+- No preference between auto-generated and manually created transcripts. You get what the fallback order gives you (tracked as issue #16).
+- macOS 13+ only. No Linux build yet.
+
+## What's next
+
+- Auto-generated vs manual transcript preference (#16)
+- Hosting a version online for access away from the desktop
+- A Linux build if anyone besides me wants one
+
 ## Tools
 
 ### `get_youtube_transcript`
@@ -63,6 +87,8 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 }
 ```
 
+Or build the `.mcpb` bundle with `./scripts/build_mcpb.sh` and install it as a Claude Desktop extension.
+
 ### Cursor
 
 Add to `.cursor/mcp.json` in your project or `~/.cursor/mcp.json` globally:
@@ -118,6 +144,6 @@ Or in Claude Desktop config:
 }
 ```
 
-## Maintenance
+## License
 
-The InnerTube Android client version (`androidClientVersion` in `TranscriptFetcher.swift`) is the maintenance-sensitive value. YouTube periodically enforces minimum versions. If transcript fetching stops working, update this version string first.
+MIT. See [LICENSE](LICENSE).

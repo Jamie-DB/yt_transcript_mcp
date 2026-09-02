@@ -16,7 +16,7 @@
 - **Platform:** macOS 13+, Swift Package Manager executable
 - **Dependencies:** MCP Swift SDK, swift-log, Foundation (URLSession)
 - **Two tools:** `get_youtube_transcript`, `list_transcript_languages`
-- **Planning doc:** [Notion project page]([internal planning doc])
+- **Planning history:** GitHub issues #1-#6 (phases and open questions); narrative in BUILDLOG.md
 - **GitHub Issues #1-#6** track development phases; **#7-#23** track code review findings
 - **Packaging:** Supports `.mcpb` bundle. Run `./scripts/build_mcpb.sh` to build.
 - **Status:** All phases (#1-#5) complete. Only stretch goals remain (#16).
