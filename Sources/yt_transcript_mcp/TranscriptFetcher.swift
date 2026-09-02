@@ -94,20 +94,36 @@ enum TranscriptFetcher {
             throw TranscriptError.noCaptionsAvailable(videoID)
         }
 
-        let track: CaptionTrack
-        if let lang = languageCode,
-           let match = result.tracks.first(where: { $0.languageCode == lang }) {
-            track = match
-        } else if languageCode != nil {
-            logger.info("Language '\(languageCode!)' not found, falling back to '\(result.tracks[0].languageCode)'")
-            track = result.tracks[0]
-        } else {
-            track = result.tracks[0]
+        // Force-unwrap is safe: tracks is non-empty (guarded above).
+        let track = selectTrack(from: result.tracks, requested: languageCode)!
+        if let lang = languageCode, track.languageCode != lang {
+            logger.info("Language '\(lang)' not found, using '\(track.languageCode)'")
         }
 
         let xml = try await fetchCaptionXML(from: track.baseURL)
         let entries = try parseCaptionXML(xml)
         return TranscriptResult(metadata: result.metadata, entries: entries, languageCode: track.languageCode)
+    }
+
+    /// Selects a caption track for a requested language: exact code match first,
+    /// then same language family (base code, so "en" matches "en-US" and
+    /// "en-US" matches "en"), then the first available track.
+    static func selectTrack(from tracks: [CaptionTrack], requested: String?) -> CaptionTrack? {
+        guard let first = tracks.first else { return nil }
+        guard let lang = requested else { return first }
+
+        if let exact = tracks.first(where: { $0.languageCode == lang }) {
+            return exact
+        }
+
+        let base = lang.split(separator: "-").first.map(String.init) ?? lang
+        if let family = tracks.first(where: {
+            $0.languageCode == base || $0.languageCode.hasPrefix(base + "-")
+        }) {
+            return family
+        }
+
+        return first
     }
 
     // MARK: - Step 1: Fetch InnerTube API Key from Page
