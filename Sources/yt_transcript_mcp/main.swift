@@ -22,7 +22,7 @@ logger.info("Starting yt_transcript_mcp server...")
 // Create server with tool capabilities
 let server = Server(
     name: "yt_transcript_mcp",
-    version: "0.1.0",
+    version: "1.0.0",
     capabilities: .init(
         tools: .init(listChanged: false)
     )
