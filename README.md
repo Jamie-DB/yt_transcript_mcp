@@ -53,7 +53,7 @@ Responses include video metadata (title, channel, duration, description) alongsi
 ## Requirements
 
 - macOS 13+
-- Swift 6.0+ (Xcode 16+ or a matching Swift toolchain)
+- Swift 6.2+ toolchain (current Xcode)
 
 ## Build
 
