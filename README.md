@@ -6,6 +6,8 @@ A lightweight MCP server that fetches YouTube video transcripts. Built in Swift,
 
 It gives AI assistants two tools: fetch a YouTube video's transcript, and list the caption languages available. I built it because watching video for information is now the slow path. Even at 2x, a 40-minute talk costs 20 minutes; the transcript plus a model that can synthesize it costs moments. I use it daily inside Claude Code to pull technical talks, tutorials, and research videos into text I can actually work with.
 
+Why Swift, when Python versions of this already exist? Partly for fun and practice, since Swift was what I was teaching at the time and building a tool I actually use beats writing another example project. Mostly because I wanted something that runs on a stock Mac with nothing installed beyond Xcode. One compiled binary, no runtime to manage, no virtualenv to go stale.
+
 ## How it was built
 
 One day, March 10, 2026: first commit 11:09 AM, packaged binary 4:06 PM, with more than half of that time spent on review findings, security hardening, and packaging rather than initial code. The work ran as five phases planned as GitHub issues before any code existed. A second Claude Code instance acted as an independent reviewer with fresh context, filing 17 findings as issues against the build (a language-keyed cache bug, SSRF hardening, a fail-fast regex decision) rather than fixing anything silently, and I arbitrated each one. The full narrative, dead ends included, is in [BUILDLOG.md](BUILDLOG.md).
