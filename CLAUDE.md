@@ -10,14 +10,14 @@
 
 ## Project Context
 
-**yt_transcript_mcp** is a Swift 6.0 MCP server that fetches YouTube transcripts for AI assistants. It runs as a local stdio subprocess spawned by Claude Code/Desktop, not as a standalone app or GUI.
+**yt_transcript_mcp** is a Swift 6.2 MCP server that fetches YouTube transcripts for AI assistants. It runs as a local stdio subprocess spawned by Claude Code/Desktop, not as a standalone app or GUI.
 
-- **SDK:** Official `modelcontextprotocol/swift-sdk` (v0.11.0+)
+- **SDK:** Official `modelcontextprotocol/swift-sdk` (Package.swift floor 0.11.0, resolved 0.12.1)
 - **Platform:** macOS 13+, Swift Package Manager executable
 - **Dependencies:** MCP Swift SDK, swift-log, Foundation (URLSession)
 - **Two tools:** `get_youtube_transcript`, `list_transcript_languages`
 - **Planning history:** GitHub issues #1-#6 (phases and open questions); narrative in BUILDLOG.md
-- **GitHub Issues #1-#6** track development phases; **#7-#23** track code review findings
+- **GitHub Issues #1-#6** track development phases, **#7-#23** track the first code review round, **#28-#31** were the pre-publish audit fixes (all closed), **#32-#40** are the audit findings left open on purpose
 - **Packaging:** Supports `.mcpb` bundle. Run `./scripts/build_mcpb.sh` to build.
 - **Status:** All phases (#1-#5) complete. Only stretch goals remain (#16).
 - Source layout:
@@ -42,7 +42,7 @@
 
 ## Coding Conventions
 
-- **Swift 6.0** with strict concurrency
+- **Swift 6.2** with strict concurrency
 - **Never use `print()`**. stdout is reserved for JSON-RPC. All logging through `swift-log` to stderr.
 - **Tool names must be snake_case** (some MCP clients silently ignore other conventions)
 - **All names use underscores**, not hyphens (package, repo, tools, everything)
@@ -84,3 +84,4 @@ At end of session, ask: **"Would you like to update CLAUDE.md?"** Promote stable
 
 1. [CODE] Always use underscores, not hyphens, for all naming in this project (repo, package, tools), because user preference to avoid mixed conventions.
 2. [TOOL] Private YouTube videos return "No captions available" even when captions exist, because the tool makes unauthenticated requests via InnerTube. Videos must be Unlisted or Public for transcript fetching to work.
+3. [PROCESS] Always verify repo state against the live source (`gh repo view`, `gh issue list`, `git log`) rather than a checked-in status doc, because NOW.md snapshots in Conductor worktrees go stale and I reported the repo as still private after it had been public for a day.
