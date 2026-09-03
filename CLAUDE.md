@@ -19,7 +19,7 @@
 - **Planning history:** GitHub issues #1-#6 (phases and open questions); narrative in BUILDLOG.md
 - **GitHub Issues #1-#6** track development phases, **#7-#23** track the first code review round, **#28-#31** were the pre-publish audit fixes (all closed), **#32-#40** are the audit findings left open on purpose
 - **Packaging:** Supports `.mcpb` bundle. Run `./scripts/build_mcpb.sh` to build.
-- **Status:** All phases (#1-#5) complete. Only stretch goals remain (#16).
+- **Status:** Parked as of Sep 3, 2026. Public since Sep 3 at github.com/Jamie-DB/yt_transcript_mcp. All phases (#1-#5) complete and the functionality is serviceable, in daily use through Claude Code. The open issues are known and accepted, not blockers: #32-#40 from the pre-publish audit, plus stretch goal #16. Resume from that list.
 - Source layout:
   ```
   Sources/
