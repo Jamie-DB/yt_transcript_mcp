@@ -4,10 +4,6 @@
 
 ---
 
-## Core Rules
-
-- Never use em dashes (---, —). Use commas, periods, semicolons, or parentheses instead.
-
 ## Project Context
 
 **yt_transcript_mcp** is a Swift 6.2 MCP server that fetches YouTube transcripts for AI assistants. It runs as a local stdio subprocess spawned by Claude Code/Desktop, not as a standalone app or GUI.
@@ -68,17 +64,6 @@
 - The mcpb manifest spec only allows `name` and `description` in the `tools` array. Full input schemas are discovered at runtime via `tools/list`.
 
 ---
-
-## Rules Engine
-
-When the user corrects you, rejects an approach, or states a preference, **immediately append a numbered rule** below.
-
-- Format: `N. [CATEGORY] Never/Always do X, because Y.`
-- Categories: `[STYLE]`, `[CODE]`, `[ARCH]`, `[TOOL]`, `[PROCESS]`, `[DATA]`, `[UX]`, `[OTHER]`
-- Scan rules before starting any task. Newer rules (higher numbers) win conflicts.
-- Never delete rules; supersede with a new one if needed.
-
-At end of session, ask: **"Would you like to update CLAUDE.md?"** Promote stable rules into sections above. Keep entries concise.
 
 ## Learned Rules
 
